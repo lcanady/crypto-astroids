@@ -1,18 +1,17 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
-import sdk, { type FrameContext } from "@farcaster/frame-sdk";
+import { useEffect, useState } from "react";
+import sdk from "@farcaster/frame-sdk";
 import { AsteroidsGame } from './AsteroidsGame';
 
 export default function Demo(
   { title }: { title?: string } = { title: "Asteroids Frame Game" }
 ) {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
-  const [context, setContext] = useState<FrameContext>();
 
   useEffect(() => {
     const load = async () => {
-      setContext(await sdk.context);
+      await sdk.context;
       sdk.actions.ready();
     };
     if (sdk && !isSDKLoaded) {
@@ -20,10 +19,6 @@ export default function Demo(
       load();
     }
   }, [isSDKLoaded]);
-
-  const close = useCallback(() => {
-    sdk.actions.close();
-  }, []);
 
   if (!isSDKLoaded) {
     return <div>Loading...</div>;

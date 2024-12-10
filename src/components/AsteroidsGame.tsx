@@ -17,7 +17,6 @@ interface TouchInfo {
 const MOBILE_MAX_SPEED = 4;
 const MOBILE_FRICTION = 0.96;
 const MOBILE_THRUST_MULTIPLIER = 0.3;
-const TAP_THRESHOLD = 10; // Maximum movement for a touch to be considered a tap
 const ASTEROID_TAP_RADIUS = 40; // Radius for asteroid tap detection
 
 // Helper function to convert touch coordinates to canvas coordinates
@@ -31,8 +30,13 @@ const getTouchCanvasCoordinates = (canvas: HTMLCanvasElement, touchX: number, to
   };
 };
 
+interface Asteroid {
+  position: { x: number; y: number };
+  size: number;
+}
+
 // Helper function to check if a point is inside an asteroid
-const isPointInAsteroid = (x: number, y: number, asteroid: any, scale: number) => {
+const isPointInAsteroid = (x: number, y: number, asteroid: Asteroid, scale: number) => {
   const dx = x - asteroid.position.x;
   const dy = y - asteroid.position.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
@@ -51,7 +55,6 @@ export const AsteroidsGame: React.FC = () => {
   const [scale, setScale] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
   const movementTouchRef = useRef<TouchInfo | null>(null);
-  const targetedAsteroidRef = useRef<any>(null);
   
   const gameStateRef = useRef<GameState>({
     status: GameStatus.START,
@@ -151,7 +154,7 @@ export const AsteroidsGame: React.FC = () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
     };
-  }, []);
+  }, [handleResize]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
