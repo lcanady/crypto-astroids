@@ -11,14 +11,11 @@ export default function Demo(
 
   useEffect(() => {
     const load = async () => {
-     
       sdk.actions.ready();
     };
-    if (sdk && !isSDKLoaded) {
-      setIsSDKLoaded(true);
+    
       load();
-    }
-  }, [isSDKLoaded]);
+  }, []);
 
   if (!isSDKLoaded) {
     return <div>Loading...</div>;
