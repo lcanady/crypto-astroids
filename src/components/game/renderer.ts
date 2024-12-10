@@ -1,4 +1,49 @@
-import { GameState, GameStatus, Ship, Asteroid, Bullet, Point, BASE_FONT_SIZE } from './types';
+import { GameState, GameStatus, Ship, Asteroid, Bullet, Point, BASE_FONT_SIZE, PowerupType } from './types';
+import { PowerupSVGs } from './PowerupContainer';
+import { updateAsteroidPhysics } from './gameUtils';
+
+// Pre-render powerup images
+const powerupImages = new Map<string, HTMLCanvasElement>();
+
+const initPowerupImages = () => {
+  if (powerupImages.size > 0) return; // Already initialized
+
+  // Create container image
+  const containerCanvas = document.createElement('canvas');
+  containerCanvas.width = containerCanvas.height = 40;
+  const containerCtx = containerCanvas.getContext('2d');
+  if (containerCtx) {
+    const containerImg = new Image();
+    const containerSvg = new Blob([PowerupSVGs.container], { type: 'image/svg+xml' });
+    const containerUrl = URL.createObjectURL(containerSvg);
+    containerImg.onload = () => {
+      containerCtx.drawImage(containerImg, 0, 0);
+      URL.revokeObjectURL(containerUrl);
+    };
+    containerImg.src = containerUrl;
+    powerupImages.set('container', containerCanvas);
+  }
+
+  // Create powerup type images
+  Object.entries(PowerupSVGs).forEach(([type, svg]) => {
+    if (type === 'container') return;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 40;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const img = new Image();
+      const svgBlob = new Blob([svg], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(svgBlob);
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+      powerupImages.set(type, canvas);
+    }
+  });
+};
 
 export const drawShip = (
   ctx: CanvasRenderingContext2D,
@@ -9,6 +54,16 @@ export const drawShip = (
   ctx.save();
   ctx.translate(ship.position.x, ship.position.y);
   ctx.rotate(ship.rotation);
+
+  // Draw shield if active
+  if (ship.shields > 0) {
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(0, 255, 255, ${0.3 + (ship.shields / 3) * 0.7})`; // Shield opacity based on hits remaining
+    ctx.lineWidth = 2 * scale;
+    ctx.arc(0, 0, shipSize * 1.2, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = 2 * scale;
   ctx.beginPath();
@@ -50,8 +105,8 @@ export const drawAsteroid = (
     ctx.stroke();
   }
 
-  // Draw the asteroid
-  ctx.strokeStyle = '#fff';
+  // Draw the asteroid with optional opacity
+  ctx.strokeStyle = `rgba(255, 255, 255, ${asteroid.opacity || 1})`;
   ctx.lineWidth = 2 * scale;
   ctx.beginPath();
   
@@ -95,9 +150,18 @@ export const drawScore = (
 export const drawStartScreen = (
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
+  gameState: GameState,
   scale: number,
   isMobile: boolean
 ): void => {
+  // Update and draw background asteroids
+  if (gameState.backgroundAsteroids) {
+    gameState.backgroundAsteroids.forEach(asteroid => {
+      updateAsteroidPhysics(asteroid, canvas);
+      drawAsteroid(ctx, asteroid, scale);
+    });
+  }
+
   const titleFontSize = Math.max(BASE_FONT_SIZE.TITLE * scale, BASE_FONT_SIZE.MIN.TITLE);
   const normalFontSize = Math.max(BASE_FONT_SIZE.NORMAL * scale, BASE_FONT_SIZE.MIN.NORMAL);
 
@@ -154,12 +218,15 @@ export const render = (
   scale: number,
   isMobile: boolean
 ): void => {
+  // Initialize powerup images if needed
+  initPowerupImages();
+
   // Clear canvas
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   if (gameState.status === GameStatus.START) {
-    drawStartScreen(ctx, canvas, scale, isMobile);
+    drawStartScreen(ctx, canvas, gameState, scale, isMobile);
     return;
   }
 
@@ -181,7 +248,34 @@ export const render = (
     drawBullet(ctx, bullet, scale);
   });
 
+  // Draw powerups using pre-rendered images
+  gameState.powerups.forEach(powerup => {
+    ctx.save();
+    ctx.translate(powerup.position.x, powerup.position.y);
+    ctx.rotate(powerup.rotation);
+
+    const containerImg = powerupImages.get('container');
+    const powerupImg = powerupImages.get(powerup.type);
+
+    if (containerImg && powerupImg) {
+      ctx.drawImage(containerImg, -20, -20);
+      ctx.drawImage(powerupImg, -20, -20);
+    }
+
+    ctx.restore();
+  });
+
   drawScore(ctx, gameState.score, gameState.highScore, scale);
+
+  // Draw shield count if active
+  if (gameState.ship.shields > 0) {
+    const normalFontSize = Math.max(BASE_FONT_SIZE.NORMAL * scale, BASE_FONT_SIZE.MIN.NORMAL);
+    ctx.fillStyle = '#00ffff';
+    ctx.font = `${normalFontSize}px "Press Start 2P"`;
+    ctx.textAlign = 'left';
+    const scoreY = Math.max(normalFontSize, 30 * scale);
+    ctx.fillText(`Shields: ${gameState.ship.shields}`, 20, scoreY * 3);
+  }
 
   if (gameState.status === GameStatus.GAME_OVER) {
     drawGameOver(ctx, canvas, gameState.score, gameState.highScore, scale);

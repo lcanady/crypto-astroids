@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { GameState, GameStatus, BASE_SHIP_SIZE, ROTATION_SPEED, THRUST_SPEED, INITIAL_SPAWN_INTERVAL } from './game/types';
-import { initializeGameState, updateShipPhysics, updateAsteroidPhysics, handleAsteroidSpawning } from './game/gameUtils';
+import { initializeGameState, updateShipPhysics, updateAsteroidPhysics, handleAsteroidSpawning, updatePowerups, createBackgroundAsteroids } from './game/gameUtils';
 import { render } from './game/renderer';
 import { handleCollisions } from './game/collisions';
 import { shoot, updateBullets } from './game/bulletSystem';
@@ -63,13 +63,17 @@ export const AsteroidsGame: React.FC = () => {
       velocity: { x: 0, y: 0 },
       rotation: 0,
       thrusting: false,
-      canShoot: true
+      canShoot: true,
+      powerups: {},
+      shields: 0
     },
     asteroids: [],
     bullets: [],
+    powerups: [],
     score: 0,
     highScore: 0,
-    spawnTimer: INITIAL_SPAWN_INTERVAL
+    spawnTimer: INITIAL_SPAWN_INTERVAL,
+    backgroundAsteroids: []
   });
 
   const keys = useRef<{ [key: string]: boolean }>({});
@@ -103,6 +107,11 @@ export const AsteroidsGame: React.FC = () => {
           x: width / 2,
           y: height / 2
         };
+      }
+
+      // Create new background asteroids when resizing
+      if (gameStateRef.current.status === GameStatus.START) {
+        gameStateRef.current.backgroundAsteroids = createBackgroundAsteroids(canvasRef.current, scale);
       }
     }
   }, [checkMobile]);
@@ -160,6 +169,9 @@ export const AsteroidsGame: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Initialize background asteroids
+    gameStateRef.current.backgroundAsteroids = createBackgroundAsteroids(canvas, scale);
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Tab') {
         e.preventDefault();
@@ -192,14 +204,12 @@ export const AsteroidsGame: React.FC = () => {
           break;
       }
 
-      if (e.key === 'Enter') {
+      if (e.key === ' ') {
         if (gameStateRef.current.status !== GameStatus.PLAYING) {
           gameStateRef.current = initializeGameState(canvas, gameStateRef.current.highScore, scale);
+        } else {
+          shoot(gameStateRef.current);
         }
-      }
-
-      if (e.key === ' ' && gameStateRef.current.status === GameStatus.PLAYING) {
-        shoot(gameStateRef.current);
       }
     };
 
@@ -332,6 +342,7 @@ export const AsteroidsGame: React.FC = () => {
           ship.position.y = (ship.position.y + ship.velocity.y + canvas.height) % canvas.height;
         }
         updateBullets(gameStateRef.current, canvas);
+        updatePowerups(gameStateRef.current, canvas);
         gameStateRef.current.asteroids.forEach(asteroid => {
           updateAsteroidPhysics(asteroid, canvas);
         });
@@ -339,10 +350,19 @@ export const AsteroidsGame: React.FC = () => {
         handleAsteroidSpawning(gameStateRef.current, canvas, scale);
       }
 
+      // Always update background asteroids
+      if (gameStateRef.current.backgroundAsteroids) {
+        gameStateRef.current.backgroundAsteroids.forEach(asteroid => {
+          updateAsteroidPhysics(asteroid, canvas);
+        });
+      }
+
       render(ctx, canvas, gameStateRef.current, BASE_SHIP_SIZE * scale, scale, isMobile);
       animationFrameId = requestAnimationFrame(update);
     };
 
+    // Start with the game in START state
+    gameStateRef.current.status = GameStatus.START;
     update();
 
     return () => {
