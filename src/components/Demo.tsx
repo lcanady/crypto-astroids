@@ -2,7 +2,6 @@
 
 import { useEffect, useCallback, useState } from "react";
 import sdk, { type FrameContext } from "@farcaster/frame-sdk";
-import { Button } from "~/components/ui/Button";
 import { AsteroidsGame } from './AsteroidsGame';
 
 export default function Demo(
