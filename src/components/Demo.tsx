@@ -11,7 +11,7 @@ export default function Demo(
 
   useEffect(() => {
     const load = async () => {
-      await sdk.context;
+     
       sdk.actions.ready();
     };
     if (sdk && !isSDKLoaded) {
