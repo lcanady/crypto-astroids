@@ -7,7 +7,7 @@ import { AsteroidsGame } from './AsteroidsGame';
 export default function Demo(
   { title }: { title?: string } = { title: "Asteroids Frame Game" }
 ) {
-  const [isSDKLoaded, setIsSDKLoaded] = useState(false);
+
 
   useEffect(() => {
     const load = async () => {
@@ -16,10 +16,6 @@ export default function Demo(
     
       load();
   }, []);
-
-  if (!isSDKLoaded) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="w-[900px] mx-auto py-4 px-2">
