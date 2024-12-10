@@ -36,6 +36,7 @@ export interface GameState {
   bullets: Bullet[];
   score: number;
   highScore: number;
+  spawnTimer: number;
 }
 
 // Game constants
@@ -58,3 +59,8 @@ export const MAX_VELOCITY = 6;
 export const SHOT_COOLDOWN = 250;
 export const MIN_ASTEROID_DISTANCE = 150;
 export const MIN_VELOCITY = 0.05;
+
+// Asteroid spawn constants
+export const INITIAL_SPAWN_INTERVAL = 300; // Frames between spawns (about 5 seconds at 60fps)
+export const MIN_SPAWN_INTERVAL = 120; // Minimum frames between spawns (about 2 seconds)
+export const SPAWN_INTERVAL_DECREASE = 10; // How much to decrease spawn interval each spawn

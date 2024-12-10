@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { GameState, GameStatus, BASE_SHIP_SIZE, ROTATION_SPEED, THRUST_SPEED } from './game/types';
-import { initializeGameState, updateShipPhysics, updateAsteroidPhysics } from './game/gameUtils';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { GameState, GameStatus, BASE_SHIP_SIZE, ROTATION_SPEED, THRUST_SPEED, INITIAL_SPAWN_INTERVAL } from './game/types';
+import { initializeGameState, updateShipPhysics, updateAsteroidPhysics, handleAsteroidSpawning } from './game/gameUtils';
 import { render } from './game/renderer';
 import { handleCollisions } from './game/collisions';
 import { shoot, updateBullets } from './game/bulletSystem';
@@ -17,7 +17,7 @@ interface TouchInfo {
 const MOBILE_MAX_SPEED = 4;
 const MOBILE_FRICTION = 0.96;
 const MOBILE_THRUST_MULTIPLIER = 0.3;
-const ASTEROID_TAP_RADIUS = 40; // Radius for asteroid tap detection
+const ASTEROID_TAP_RADIUS = 40;
 
 // Helper function to convert touch coordinates to canvas coordinates
 const getTouchCanvasCoordinates = (canvas: HTMLCanvasElement, touchX: number, touchY: number) => {
@@ -68,17 +68,18 @@ export const AsteroidsGame: React.FC = () => {
     asteroids: [],
     bullets: [],
     score: 0,
-    highScore: 0
+    highScore: 0,
+    spawnTimer: INITIAL_SPAWN_INTERVAL
   });
 
   const keys = useRef<{ [key: string]: boolean }>({});
 
-  const checkMobile = () => {
+  const checkMobile = useCallback(() => {
     return window.innerWidth <= 768 || 
            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  };
+  }, []);
 
-  const handleResize = () => {
+  const handleResize = useCallback(() => {
     if (!containerRef.current) return;
 
     const width = window.innerWidth;
@@ -87,10 +88,10 @@ export const AsteroidsGame: React.FC = () => {
     setDimensions({ width, height });
     setIsMobile(checkMobile());
 
-    const baseSize = 800; // Reduced from 1000 to make everything relatively larger
+    const baseSize = 800;
     const screenSize = Math.min(width, height);
     const calculatedScale = screenSize / baseSize;
-    const minimumScale = checkMobile() ? 1.5 : 0.8; // Increased minimum scale for mobile from 1.0 to 1.5
+    const minimumScale = checkMobile() ? 1.5 : 0.8;
     setScale(Math.max(calculatedScale, minimumScale));
 
     if (canvasRef.current) {
@@ -104,9 +105,9 @@ export const AsteroidsGame: React.FC = () => {
         };
       }
     }
-  };
+  }, [checkMobile]);
 
-  const updateShipFromTouch = () => {
+  const updateShipFromTouch = useCallback(() => {
     if (!movementTouchRef.current) {
       gameStateRef.current.ship.thrusting = false;
       return;
@@ -114,24 +115,20 @@ export const AsteroidsGame: React.FC = () => {
 
     const { startX, startY, currentX, currentY } = movementTouchRef.current;
     
-    // Calculate angle and distance from start point to current point
     const deltaX = currentX - startX;
     const deltaY = currentY - startY;
     const angle = Math.atan2(deltaY, deltaX);
     const distance = Math.hypot(deltaX, deltaY);
     
-    // Only apply thrust if moved more than 10 pixels from start
     if (distance > 10) {
       const ship = gameStateRef.current.ship;
       ship.thrusting = true;
       ship.rotation = angle;
 
-      // Apply reduced thrust in the direction of movement
       const thrustMultiplier = Math.min(distance / 100, 1) * MOBILE_THRUST_MULTIPLIER;
       ship.velocity.x += Math.cos(angle) * THRUST_SPEED * thrustMultiplier;
       ship.velocity.y += Math.sin(angle) * THRUST_SPEED * thrustMultiplier;
 
-      // Limit velocity to lower maximum speed on mobile
       const speed = Math.hypot(ship.velocity.x, ship.velocity.y);
       if (speed > MOBILE_MAX_SPEED) {
         const ratio = MOBILE_MAX_SPEED / speed;
@@ -141,7 +138,7 @@ export const AsteroidsGame: React.FC = () => {
     } else {
       gameStateRef.current.ship.thrusting = false;
     }
-  };
+  }, []);
 
   useEffect(() => {
     handleResize();
@@ -169,6 +166,32 @@ export const AsteroidsGame: React.FC = () => {
       }
       keys.current[e.key] = true;
       
+      // Map WASD keys to their arrow key equivalents
+      switch (e.key.toLowerCase()) {
+        case 'w':
+          keys.current['Thrust'] = true;
+          break;
+        case 'a':
+          keys.current['RotateLeft'] = true;
+          break;
+        case 'd':
+          keys.current['RotateRight'] = true;
+          break;
+      }
+
+      // Map arrow keys
+      switch (e.key) {
+        case 'ArrowUp':
+          keys.current['Thrust'] = true;
+          break;
+        case 'ArrowLeft':
+          keys.current['RotateLeft'] = true;
+          break;
+        case 'ArrowRight':
+          keys.current['RotateRight'] = true;
+          break;
+      }
+
       if (e.key === 'Enter') {
         if (gameStateRef.current.status !== GameStatus.PLAYING) {
           gameStateRef.current = initializeGameState(canvas, gameStateRef.current.highScore, scale);
@@ -185,6 +208,32 @@ export const AsteroidsGame: React.FC = () => {
         e.preventDefault();
       }
       keys.current[e.key] = false;
+      
+      // Unmap WASD keys
+      switch (e.key.toLowerCase()) {
+        case 'w':
+          keys.current['Thrust'] = false;
+          break;
+        case 'a':
+          keys.current['RotateLeft'] = false;
+          break;
+        case 'd':
+          keys.current['RotateRight'] = false;
+          break;
+      }
+
+      // Unmap arrow keys
+      switch (e.key) {
+        case 'ArrowUp':
+          keys.current['Thrust'] = false;
+          break;
+        case 'ArrowLeft':
+          keys.current['RotateLeft'] = false;
+          break;
+        case 'ArrowRight':
+          keys.current['RotateRight'] = false;
+          break;
+      }
     };
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -198,12 +247,9 @@ export const AsteroidsGame: React.FC = () => {
       const touch = e.touches[0];
       const canvasCoords = getTouchCanvasCoordinates(canvas, touch.clientX, touch.clientY);
 
-      // If no movement touch is tracked, check if we're tapping an asteroid
       if (!movementTouchRef.current) {
-        // Check if we tapped an asteroid
         for (const asteroid of gameStateRef.current.asteroids) {
           if (isPointInAsteroid(canvasCoords.x, canvasCoords.y, asteroid, scale)) {
-            // Calculate angle to asteroid
             const angle = calculateAngleBetweenPoints(
               gameStateRef.current.ship.position.x,
               gameStateRef.current.ship.position.y,
@@ -211,14 +257,12 @@ export const AsteroidsGame: React.FC = () => {
               asteroid.position.y
             );
             
-            // Update ship rotation and shoot
             gameStateRef.current.ship.rotation = angle;
             shoot(gameStateRef.current);
             return;
           }
         }
 
-        // If no asteroid was tapped, start movement tracking
         movementTouchRef.current = {
           id: touch.identifier,
           startX: touch.clientX,
@@ -232,7 +276,6 @@ export const AsteroidsGame: React.FC = () => {
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
       
-      // Update movement touch if we're tracking it
       if (movementTouchRef.current) {
         for (let i = 0; i < e.touches.length; i++) {
           const touch = e.touches[i];
@@ -249,7 +292,6 @@ export const AsteroidsGame: React.FC = () => {
     const handleTouchEnd = (e: TouchEvent) => {
       e.preventDefault();
       
-      // Check if the movement touch ended
       if (movementTouchRef.current) {
         let movementTouchFound = false;
         for (let i = 0; i < e.touches.length; i++) {
@@ -278,17 +320,14 @@ export const AsteroidsGame: React.FC = () => {
         if (!isMobile) {
           updateShipPhysics(gameStateRef.current.ship, keys.current, canvas, ROTATION_SPEED);
         } else {
-          // Apply stronger friction in mobile mode
           const ship = gameStateRef.current.ship;
           if (!ship.thrusting) {
             ship.velocity.x *= MOBILE_FRICTION;
             ship.velocity.y *= MOBILE_FRICTION;
 
-            // Stop completely at very low speeds to prevent endless drifting
             if (Math.abs(ship.velocity.x) < 0.01) ship.velocity.x = 0;
             if (Math.abs(ship.velocity.y) < 0.01) ship.velocity.y = 0;
           }
-          // Update position
           ship.position.x = (ship.position.x + ship.velocity.x + canvas.width) % canvas.width;
           ship.position.y = (ship.position.y + ship.velocity.y + canvas.height) % canvas.height;
         }
@@ -297,6 +336,7 @@ export const AsteroidsGame: React.FC = () => {
           updateAsteroidPhysics(asteroid, canvas);
         });
         handleCollisions(gameStateRef.current, BASE_SHIP_SIZE * scale, scale);
+        handleAsteroidSpawning(gameStateRef.current, canvas, scale);
       }
 
       render(ctx, canvas, gameStateRef.current, BASE_SHIP_SIZE * scale, scale, isMobile);
@@ -313,7 +353,7 @@ export const AsteroidsGame: React.FC = () => {
       canvas.removeEventListener('touchend', handleTouchEnd);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [scale, isMobile]);
+  }, [scale, isMobile, updateShipFromTouch]);
 
   return (
     <div 

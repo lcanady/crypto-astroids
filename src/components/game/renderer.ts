@@ -85,7 +85,7 @@ export const drawScore = (
   scale: number
 ): void => {
   const normalFontSize = Math.max(BASE_FONT_SIZE.NORMAL * scale, BASE_FONT_SIZE.MIN.NORMAL);
-  ctx.font = `bold ${normalFontSize}px Arial`;
+  ctx.font = `${normalFontSize}px "Press Start 2P"`;
   ctx.textAlign = 'left';
   const scoreY = Math.max(normalFontSize, 30 * scale);
   ctx.fillText(`Score: ${score}`, 20, scoreY);
@@ -102,18 +102,19 @@ export const drawStartScreen = (
   const normalFontSize = Math.max(BASE_FONT_SIZE.NORMAL * scale, BASE_FONT_SIZE.MIN.NORMAL);
 
   ctx.fillStyle = '#fff';
-  ctx.font = `bold ${titleFontSize}px Arial`;
+  ctx.font = `${titleFontSize}px "Press Start 2P"`;
   ctx.textAlign = 'center';
   ctx.fillText('ASTEROIDS', canvas.width / 2, canvas.height / 2 - titleFontSize);
   
-  ctx.font = `${normalFontSize}px Arial`;
+  ctx.font = `${normalFontSize}px "Press Start 2P"`;
   const lineHeight = normalFontSize * 1.5;
-  ctx.fillText('Press ENTER or Tap to Start', canvas.width / 2, canvas.height / 2 + lineHeight);
+  ctx.fillText('TAP TO START', canvas.width / 2, canvas.height / 2 + lineHeight);
   
   if (isMobile) {
-    ctx.fillText('Drag to Move, Tap Asteroids to Shoot', canvas.width / 2, canvas.height / 2 + lineHeight * 2);
+    ctx.fillText('DRAG = MOVE', canvas.width / 2, canvas.height / 2 + lineHeight * 2);
+    ctx.fillText('TAP = SHOOT', canvas.width / 2, canvas.height / 2 + lineHeight * 3);
   } else {
-    ctx.fillText('Use Arrow Keys to Move', canvas.width / 2, canvas.height / 2 + lineHeight * 2);
+    ctx.fillText('Use Arrow Keys or WASD to Move', canvas.width / 2, canvas.height / 2 + lineHeight * 2);
     ctx.fillText('Space to Shoot', canvas.width / 2, canvas.height / 2 + lineHeight * 3);
   }
 };
@@ -132,17 +133,17 @@ export const drawGameOver = (
   const normalFontSize = Math.max(BASE_FONT_SIZE.NORMAL * scale, BASE_FONT_SIZE.MIN.NORMAL);
   
   ctx.fillStyle = '#fff';
-  ctx.font = `bold ${titleFontSize}px Arial`;
+  ctx.font = `${titleFontSize}px "Press Start 2P"`;
   ctx.textAlign = 'center';
   
   const gameOverY = canvas.height / 2 - titleFontSize;
   ctx.fillText('GAME OVER', canvas.width / 2, gameOverY);
   
-  ctx.font = `${normalFontSize}px Arial`;
+  ctx.font = `${normalFontSize}px "Press Start 2P"`;
   const lineHeight = normalFontSize * 1.5;
   ctx.fillText(`Final Score: ${score}`, canvas.width / 2, gameOverY + lineHeight);
   ctx.fillText(`High Score: ${highScore}`, canvas.width / 2, gameOverY + lineHeight * 2);
-  ctx.fillText('Press ENTER or Tap to Play Again', canvas.width / 2, gameOverY + lineHeight * 3);
+  ctx.fillText('TAP TO PLAY AGAIN', canvas.width / 2, gameOverY + lineHeight * 3);
 };
 
 export const render = (

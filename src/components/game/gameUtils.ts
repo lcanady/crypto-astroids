@@ -1,4 +1,4 @@
-import { Point, Ship, Asteroid, GameState, GameStatus, BASE_ASTEROID_SIZES, THRUST_SPEED, MIN_VELOCITY, FRICTION, MAX_VELOCITY, MIN_ASTEROID_DISTANCE } from './types';
+import { Point, Ship, Asteroid, GameState, GameStatus, BASE_ASTEROID_SIZES, THRUST_SPEED, MIN_VELOCITY, FRICTION, MAX_VELOCITY, MIN_ASTEROID_DISTANCE, INITIAL_SPAWN_INTERVAL, MIN_SPAWN_INTERVAL, SPAWN_INTERVAL_DECREASE } from './types';
 
 export const getDistance = (p1: Point, p2: Point): number => {
   return Math.hypot(p2.x - p1.x, p2.y - p1.y);
@@ -45,6 +45,24 @@ export const getSafeSpawnPosition = (
   return pos;
 };
 
+export const createNewAsteroid = (
+  canvas: HTMLCanvasElement,
+  shipPos: Point,
+  scale: number
+): Asteroid => {
+  const pos = getSafeSpawnPosition(canvas, shipPos, scale);
+  return {
+    position: pos,
+    velocity: {
+      x: (Math.random() - 0.5) * 2,
+      y: (Math.random() - 0.5) * 2
+    },
+    rotation: Math.random() * Math.PI * 2,
+    size: BASE_ASTEROID_SIZES[0] * scale,
+    vertices: createAsteroidVertices(BASE_ASTEROID_SIZES[0] * scale)
+  };
+};
+
 export const updateShipPhysics = (
   ship: Ship, 
   keys: { [key: string]: boolean }, 
@@ -86,6 +104,24 @@ export const updateAsteroidPhysics = (asteroid: Asteroid, canvas: HTMLCanvasElem
   asteroid.rotation += 0.02;
 };
 
+export const handleAsteroidSpawning = (gameState: GameState, canvas: HTMLCanvasElement, scale: number): void => {
+  if (gameState.status !== GameStatus.PLAYING) return;
+
+  gameState.spawnTimer--;
+  
+  if (gameState.spawnTimer <= 0) {
+    // Add a new asteroid
+    gameState.asteroids.push(createNewAsteroid(canvas, gameState.ship.position, scale));
+    
+    // Reset timer with decreased interval
+    const newInterval = Math.max(
+      MIN_SPAWN_INTERVAL,
+      INITIAL_SPAWN_INTERVAL - Math.floor(gameState.score / 100) * SPAWN_INTERVAL_DECREASE
+    );
+    gameState.spawnTimer = newInterval;
+  }
+};
+
 export const initializeGameState = (
   canvas: HTMLCanvasElement, 
   currentHighScore: number,
@@ -121,6 +157,7 @@ export const initializeGameState = (
     asteroids,
     bullets: [],
     score: 0,
-    highScore: currentHighScore
+    highScore: currentHighScore,
+    spawnTimer: INITIAL_SPAWN_INTERVAL
   };
 };
