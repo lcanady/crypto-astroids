@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import sdk from "@farcaster/frame-sdk";
 import { AsteroidsGame } from './AsteroidsGame';
 
