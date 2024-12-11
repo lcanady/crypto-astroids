@@ -19,6 +19,10 @@ const MOBILE_FRICTION = 0.96;
 const MOBILE_THRUST_MULTIPLIER = 0.3;
 const ASTEROID_TAP_RADIUS = 40;
 
+// Base game area size for scaling calculations
+const BASE_GAME_WIDTH = 1920;
+const BASE_GAME_HEIGHT = 1080;
+
 // Helper function to convert touch coordinates to canvas coordinates
 const getTouchCanvasCoordinates = (canvas: HTMLCanvasElement, touchX: number, touchY: number) => {
   const rect = canvas.getBoundingClientRect();
@@ -102,10 +106,22 @@ export const AsteroidsGame: React.FC = () => {
     const isMobileDevice = checkMobile();
     setIsMobile(isMobileDevice);
 
-    // For mobile, use dynamic scaling with a minimum of 2x
-    // For desktop, use 1:1 scale
-    const scale = isMobileDevice ? Math.max(2, Math.min(width, height) / 800) : 1;
-    setScale(scale);
+    // Calculate scale based on both width and height ratios
+    const widthRatio = width / BASE_GAME_WIDTH;
+    const heightRatio = height / BASE_GAME_HEIGHT;
+    
+    // Use the smaller ratio to ensure game fits on screen
+    let newScale = Math.min(widthRatio, heightRatio);
+    
+    // Set minimum scale to ensure game elements aren't too small
+    newScale = Math.max(newScale, 0.3);
+    
+    // For mobile, increase minimum scale
+    if (isMobileDevice) {
+      newScale = Math.max(newScale, 0.5);
+    }
+
+    setScale(newScale);
 
     if (canvasRef.current) {
       canvasRef.current.width = width;
@@ -119,7 +135,7 @@ export const AsteroidsGame: React.FC = () => {
       }
 
       if (gameStateRef.current.status === GameStatus.START) {
-        gameStateRef.current.backgroundAsteroids = createBackgroundAsteroids(canvasRef.current, scale);
+        gameStateRef.current.backgroundAsteroids = createBackgroundAsteroids(canvasRef.current, newScale);
       }
     }
   }, [checkMobile]);

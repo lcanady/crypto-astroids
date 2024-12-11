@@ -13,7 +13,7 @@ const frame = {
       name: "Farcaster Frames v2 Demo",
       url: appUrl,
       splashImageUrl: `${appUrl}/splash.png`,
-      splashBackgroundColor: "#f7f7f7",
+      splashBackgroundColor: "#000",
     },
   },
 };
@@ -22,10 +22,10 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Farcaster Frames v2 Demo",
+    title: "Asreroid Blast!",
     openGraph: {
-      title: "Farcaster Frames v2 Demo",
-      description: "A Farcaster Frames v2 demo app.",
+      title: "Asreroid Blast!",
+      description: "An asreroid blaster!",
     },
     other: {
       "fc:frame": JSON.stringify(frame),
