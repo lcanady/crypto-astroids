@@ -62,16 +62,7 @@ export default async function Image() {
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: 'Arial',
-          data: await fetch(
-            new URL('https://fonts.cdnfonts.com/s/29107/ARIAL.woff')
-          ).then((res) => res.arrayBuffer()),
-          weight: 400,
-          style: 'normal',
-        },
-      ],
+      fonts: [],
     }
   );
 }
