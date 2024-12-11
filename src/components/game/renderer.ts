@@ -10,14 +10,14 @@ const initPowerupImages = () => {
 
   // Create container image
   const containerCanvas = document.createElement('canvas');
-  containerCanvas.width = containerCanvas.height = 40;
+  containerCanvas.width = containerCanvas.height = 80; // Doubled from 40 to 80
   const containerCtx = containerCanvas.getContext('2d');
   if (containerCtx) {
     const containerImg = new Image();
     const containerSvg = new Blob([PowerupSVGs.container], { type: 'image/svg+xml' });
     const containerUrl = URL.createObjectURL(containerSvg);
     containerImg.onload = () => {
-      containerCtx.drawImage(containerImg, 0, 0);
+      containerCtx.drawImage(containerImg, 0, 0, 80, 80); // Doubled size
       URL.revokeObjectURL(containerUrl);
     };
     containerImg.src = containerUrl;
@@ -29,14 +29,14 @@ const initPowerupImages = () => {
     if (type === 'container') return;
     
     const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 40;
+    canvas.width = canvas.height = 80; // Doubled from 40 to 80
     const ctx = canvas.getContext('2d');
     if (ctx) {
       const img = new Image();
       const svgBlob = new Blob([svg], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(svgBlob);
       img.onload = () => {
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, 80, 80); // Doubled size
         URL.revokeObjectURL(url);
       };
       img.src = url;
@@ -60,7 +60,9 @@ export const drawShip = (
     ctx.beginPath();
     ctx.strokeStyle = `rgba(0, 255, 255, ${0.3 + (ship.shields / 3) * 0.7})`; // Shield opacity based on hits remaining
     ctx.lineWidth = 2 * scale;
-    ctx.arc(0, 0, shipSize * 1.2, 0, Math.PI * 2);
+    // Make shield wider than the ship with 10px offset
+    const shieldSize = shipSize + (10 * scale);
+    ctx.arc(0, 0, shieldSize, 0, Math.PI * 2);
     ctx.stroke();
   }
 
@@ -258,8 +260,10 @@ export const render = (
     const powerupImg = powerupImages.get(powerup.type);
 
     if (containerImg && powerupImg) {
-      ctx.drawImage(containerImg, -20, -20);
-      ctx.drawImage(powerupImg, -20, -20);
+      const drawSize = isMobile ? 80 : 40; // Use larger size for mobile
+      const offset = drawSize / 2;
+      ctx.drawImage(containerImg, -offset, -offset, drawSize, drawSize);
+      ctx.drawImage(powerupImg, -offset, -offset, drawSize, drawSize);
     }
 
     ctx.restore();

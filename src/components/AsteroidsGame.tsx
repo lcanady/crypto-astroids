@@ -95,7 +95,7 @@ export const AsteroidsGame: React.FC = () => {
     const baseSize = 800;
     const screenSize = Math.min(width, height);
     const calculatedScale = screenSize / baseSize;
-    const minimumScale = checkMobile() ? 1.5 : 0.8;
+    const minimumScale = checkMobile() ? 2 : 0.8; // Changed from 1.5 to 2 for mobile
     setScale(Math.max(calculatedScale, minimumScale));
 
     if (canvasRef.current) {
@@ -206,7 +206,7 @@ export const AsteroidsGame: React.FC = () => {
 
       if (e.key === ' ') {
         if (gameStateRef.current.status !== GameStatus.PLAYING) {
-          gameStateRef.current = initializeGameState(canvas, gameStateRef.current.highScore, scale);
+          gameStateRef.current = initializeGameState(canvas, gameStateRef.current.highScore, scale, isMobile);
         } else {
           shoot(gameStateRef.current);
         }
@@ -250,7 +250,7 @@ export const AsteroidsGame: React.FC = () => {
       e.preventDefault();
 
       if (gameStateRef.current.status !== GameStatus.PLAYING) {
-        gameStateRef.current = initializeGameState(canvas, gameStateRef.current.highScore, scale);
+        gameStateRef.current = initializeGameState(canvas, gameStateRef.current.highScore, scale, isMobile);
         return;
       }
 
@@ -347,7 +347,7 @@ export const AsteroidsGame: React.FC = () => {
           updateAsteroidPhysics(asteroid, canvas);
         });
         handleCollisions(gameStateRef.current, BASE_SHIP_SIZE * scale, scale);
-        handleAsteroidSpawning(gameStateRef.current, canvas, scale);
+        handleAsteroidSpawning(gameStateRef.current, canvas, scale, isMobile);
       }
 
       // Always update background asteroids

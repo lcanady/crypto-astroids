@@ -1,4 +1,4 @@
-import { Point, Ship, Asteroid, GameState, GameStatus, PowerupType, Powerup, BASE_ASTEROID_SIZES, THRUST_SPEED, MIN_VELOCITY, FRICTION, MAX_VELOCITY, MIN_ASTEROID_DISTANCE, INITIAL_SPAWN_INTERVAL, MIN_SPAWN_INTERVAL, SPAWN_INTERVAL_DECREASE, POWERUP_SPAWN_CHANCE, BACKGROUND_ASTEROID_COUNT, BACKGROUND_ASTEROID_SPEED, BACKGROUND_ASTEROID_OPACITY } from './types';
+import { Point, Ship, Asteroid, GameState, GameStatus, PowerupType, Powerup, BASE_ASTEROID_SIZES, THRUST_SPEED, MIN_VELOCITY, FRICTION, MAX_VELOCITY, MIN_ASTEROID_DISTANCE, INITIAL_SPAWN_INTERVAL, MIN_SPAWN_INTERVAL, SPAWN_INTERVAL_DECREASE, POWERUP_SPAWN_CHANCE, BACKGROUND_ASTEROID_COUNT, BACKGROUND_ASTEROID_SPEED, BACKGROUND_ASTEROID_OPACITY, SHIELD_HITS, MOBILE_INITIAL_SPAWN_INTERVAL, MOBILE_MIN_SPAWN_INTERVAL, MOBILE_SPAWN_INTERVAL_DECREASE } from './types';
 
 export const getDistance = (p1: Point, p2: Point): number => {
   return Math.hypot(p2.x - p1.x, p2.y - p1.y);
@@ -231,7 +231,7 @@ export const updatePowerups = (gameState: GameState, canvas: HTMLCanvasElement):
   });
 };
 
-export const handleAsteroidSpawning = (gameState: GameState, canvas: HTMLCanvasElement, scale: number): void => {
+export const handleAsteroidSpawning = (gameState: GameState, canvas: HTMLCanvasElement, scale: number, isMobile: boolean = false): void => {
   if (gameState.status !== GameStatus.PLAYING) return;
 
   gameState.spawnTimer--;
@@ -240,10 +240,14 @@ export const handleAsteroidSpawning = (gameState: GameState, canvas: HTMLCanvasE
     // Add a new asteroid
     gameState.asteroids.push(createNewAsteroid(canvas, gameState.ship.position, scale));
     
-    // Reset timer with decreased interval
+    // Reset timer with decreased interval based on platform
+    const initialInterval = isMobile ? MOBILE_INITIAL_SPAWN_INTERVAL : INITIAL_SPAWN_INTERVAL;
+    const minInterval = isMobile ? MOBILE_MIN_SPAWN_INTERVAL : MIN_SPAWN_INTERVAL;
+    const decreaseRate = isMobile ? MOBILE_SPAWN_INTERVAL_DECREASE : SPAWN_INTERVAL_DECREASE;
+    
     const newInterval = Math.max(
-      MIN_SPAWN_INTERVAL,
-      INITIAL_SPAWN_INTERVAL - Math.floor(gameState.score / 100) * SPAWN_INTERVAL_DECREASE
+      minInterval,
+      initialInterval - Math.floor(gameState.score / 100) * decreaseRate
     );
     gameState.spawnTimer = newInterval;
   }
@@ -261,13 +265,17 @@ export const handlePowerupSpawning = (gameState: GameState, destroyedAsteroidPos
 export const initializeGameState = (
   canvas: HTMLCanvasElement, 
   currentHighScore: number,
-  scale: number
+  scale: number,
+  isMobile: boolean = false
 ): GameState => {
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
   const asteroids: Asteroid[] = [];
 
-  for (let i = 0; i < 4; i++) {
+  // Start with fewer asteroids on mobile
+  const initialAsteroids = isMobile ? 2 : 4;
+
+  for (let i = 0; i < initialAsteroids; i++) {
     const pos = getSafeSpawnPosition(canvas, { x: centerX, y: centerY }, scale);
     asteroids.push({
       position: pos,
@@ -290,14 +298,14 @@ export const initializeGameState = (
       thrusting: false,
       canShoot: true,
       powerups: {},
-      shields: 0
+      shields: SHIELD_HITS
     },
     asteroids,
     bullets: [],
     powerups: [],
     score: 0,
     highScore: currentHighScore,
-    spawnTimer: INITIAL_SPAWN_INTERVAL,
+    spawnTimer: isMobile ? MOBILE_INITIAL_SPAWN_INTERVAL : INITIAL_SPAWN_INTERVAL,
     backgroundAsteroids: createBackgroundAsteroids(canvas, scale)
   };
 };

@@ -65,8 +65,8 @@ export interface GameState {
 }
 
 // Game constants
-export const BASE_SHIP_SIZE = 20;
-export const BASE_ASTEROID_SIZES = [50, 25, 12];
+export const BASE_SHIP_SIZE = 40; // Increased from 20 to 40
+export const BASE_ASTEROID_SIZES = [100, 50, 24]; // Doubled from [50, 25, 12]
 export const BASE_FONT_SIZE = {
   TITLE: 48,
   NORMAL: 24,
@@ -89,6 +89,11 @@ export const MIN_VELOCITY = 0.05;
 export const INITIAL_SPAWN_INTERVAL = 300;
 export const MIN_SPAWN_INTERVAL = 120;
 export const SPAWN_INTERVAL_DECREASE = 10;
+
+// Mobile-specific asteroid spawn constants
+export const MOBILE_INITIAL_SPAWN_INTERVAL = 450; // 50% slower than desktop
+export const MOBILE_MIN_SPAWN_INTERVAL = 240; // 50% slower than desktop
+export const MOBILE_SPAWN_INTERVAL_DECREASE = 8; // Slower decrease rate for mobile
 
 // Powerup constants
 export const POWERUP_TTL = 600; // 10 seconds at 60fps
