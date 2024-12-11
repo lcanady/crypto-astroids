@@ -11,25 +11,52 @@ export const contentType = "image/png";
 export default async function Image() {
   return new ImageResponse(
     (
-      <div tw="h-full w-full flex flex-col justify-center items-center relative bg-black">
-        <div tw="flex flex-col items-center gap-4">
-          <h1 tw="text-6xl font-bold text-white" style={{ fontFamily: 'Ready Player 2' }}>Astroid Blast!</h1>
-          <h2 tw="text-4xl font-bold text-white" style={{ fontFamily: 'Ready Player 2' }}>V2 Frame</h2>
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#000000',
+          backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #000000 100%)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '20px',
+          }}
+        >
+          <h1
+            style={{
+              fontSize: '60px',
+              fontWeight: 'bold',
+              color: '#ffffff',
+              textShadow: '0 0 10px rgba(255,255,255,0.5)',
+              margin: 0,
+            }}
+          >
+            Astroid Blast!
+          </h1>
+          <h2
+            style={{
+              fontSize: '40px',
+              fontWeight: 'bold',
+              color: '#4f9eff',
+              margin: 0,
+            }}
+          >
+            V2 Frame
+          </h2>
         </div>
       </div>
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: 'Ready Player 2',
-          data: await fetch(
-            new URL('https://db.onlinewebfonts.com/t/05289e866fe7e1e99d27a7a31f8d3b66.woff2')
-          ).then((res) => res.arrayBuffer()),
-          weight: 700,
-          style: 'normal',
-        },
-      ],
     }
   );
 }

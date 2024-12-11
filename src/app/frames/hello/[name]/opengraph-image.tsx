@@ -21,8 +21,29 @@ export default async function Image({ params }: Props) {
 
   return new ImageResponse(
     (
-      <div tw="h-full w-full flex flex-col justify-center items-center relative bg-white">
-        <h1 tw="text-6xl">Hello, {name}</h1>
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#000000',
+          backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #000000 100%)',
+        }}
+      >
+        <h1
+          style={{
+            fontSize: '60px',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            textShadow: '0 0 10px rgba(255,255,255,0.5)',
+            margin: 0,
+          }}
+        >
+          Hello, {name}
+        </h1>
       </div>
     ),
     {
