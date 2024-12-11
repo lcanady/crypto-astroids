@@ -76,6 +76,15 @@ export const AsteroidsGame: React.FC = () => {
     backgroundAsteroids: []
   });
 
+  // Update canvas dataset with game state
+  const updateCanvasData = useCallback(() => {
+    if (canvasRef.current) {
+      canvasRef.current.dataset.gameStatus = gameStateRef.current.status;
+      canvasRef.current.dataset.score = gameStateRef.current.score.toString();
+      canvasRef.current.dataset.highScore = gameStateRef.current.highScore.toString();
+    }
+  }, []);
+
   const keys = useRef<{ [key: string]: boolean }>({});
 
   const checkMobile = useCallback(() => {
@@ -90,13 +99,13 @@ export const AsteroidsGame: React.FC = () => {
     const height = window.innerHeight;
 
     setDimensions({ width, height });
-    setIsMobile(checkMobile());
+    const isMobileDevice = checkMobile();
+    setIsMobile(isMobileDevice);
 
-    const baseSize = 800;
-    const screenSize = Math.min(width, height);
-    const calculatedScale = screenSize / baseSize;
-    const minimumScale = checkMobile() ? 2 : 0.8; // Changed from 1.5 to 2 for mobile
-    setScale(Math.max(calculatedScale, minimumScale));
+    // For mobile, use dynamic scaling with a minimum of 2x
+    // For desktop, use 1:1 scale
+    const scale = isMobileDevice ? Math.max(2, Math.min(width, height) / 800) : 1;
+    setScale(scale);
 
     if (canvasRef.current) {
       canvasRef.current.width = width;
@@ -109,7 +118,6 @@ export const AsteroidsGame: React.FC = () => {
         };
       }
 
-      // Create new background asteroids when resizing
       if (gameStateRef.current.status === GameStatus.START) {
         gameStateRef.current.backgroundAsteroids = createBackgroundAsteroids(canvasRef.current, scale);
       }
@@ -169,7 +177,6 @@ export const AsteroidsGame: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Initialize background asteroids
     gameStateRef.current.backgroundAsteroids = createBackgroundAsteroids(canvas, scale);
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -178,7 +185,6 @@ export const AsteroidsGame: React.FC = () => {
       }
       keys.current[e.key] = true;
       
-      // Map WASD keys to their arrow key equivalents
       switch (e.key.toLowerCase()) {
         case 'w':
           keys.current['Thrust'] = true;
@@ -191,7 +197,6 @@ export const AsteroidsGame: React.FC = () => {
           break;
       }
 
-      // Map arrow keys
       switch (e.key) {
         case 'ArrowUp':
           keys.current['Thrust'] = true;
@@ -207,6 +212,7 @@ export const AsteroidsGame: React.FC = () => {
       if (e.key === ' ') {
         if (gameStateRef.current.status !== GameStatus.PLAYING) {
           gameStateRef.current = initializeGameState(canvas, gameStateRef.current.highScore, scale, isMobile);
+          updateCanvasData();
         } else {
           shoot(gameStateRef.current);
         }
@@ -219,7 +225,6 @@ export const AsteroidsGame: React.FC = () => {
       }
       keys.current[e.key] = false;
       
-      // Unmap WASD keys
       switch (e.key.toLowerCase()) {
         case 'w':
           keys.current['Thrust'] = false;
@@ -232,7 +237,6 @@ export const AsteroidsGame: React.FC = () => {
           break;
       }
 
-      // Unmap arrow keys
       switch (e.key) {
         case 'ArrowUp':
           keys.current['Thrust'] = false;
@@ -251,6 +255,7 @@ export const AsteroidsGame: React.FC = () => {
 
       if (gameStateRef.current.status !== GameStatus.PLAYING) {
         gameStateRef.current = initializeGameState(canvas, gameStateRef.current.highScore, scale, isMobile);
+        updateCanvasData();
         return;
       }
 
@@ -348,9 +353,9 @@ export const AsteroidsGame: React.FC = () => {
         });
         handleCollisions(gameStateRef.current, BASE_SHIP_SIZE * scale, scale);
         handleAsteroidSpawning(gameStateRef.current, canvas, scale, isMobile);
+        updateCanvasData();
       }
 
-      // Always update background asteroids
       if (gameStateRef.current.backgroundAsteroids) {
         gameStateRef.current.backgroundAsteroids.forEach(asteroid => {
           updateAsteroidPhysics(asteroid, canvas);
@@ -361,8 +366,8 @@ export const AsteroidsGame: React.FC = () => {
       animationFrameId = requestAnimationFrame(update);
     };
 
-    // Start with the game in START state
     gameStateRef.current.status = GameStatus.START;
+    updateCanvasData();
     update();
 
     return () => {
@@ -373,7 +378,7 @@ export const AsteroidsGame: React.FC = () => {
       canvas.removeEventListener('touchend', handleTouchEnd);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [scale, isMobile, updateShipFromTouch]);
+  }, [scale, isMobile, updateShipFromTouch, updateCanvasData]);
 
   return (
     <div 

@@ -1,11 +1,6 @@
 import { GameState, Bullet, Asteroid, PowerupType, POWERUP_DURATION, GameStatus, BASE_ASTEROID_SIZES, SHIELD_HITS } from './types';
 import { getDistance, createAsteroidVertices, handlePowerupSpawning } from './gameUtils';
 
-// Helper function to check if point is within bounds
-const isInBounds = (x: number, y: number, width: number, height: number): boolean => {
-  return x >= 0 && x <= width && y >= 0 && y <= height;
-};
-
 export const handleCollisions = (
   gameState: GameState,
   shipSize: number,

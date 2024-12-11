@@ -1,4 +1,7 @@
+// PowerupType is used for type checking in runtime powerup handling
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { GameState, GameStatus, Ship, Asteroid, Bullet, Point, BASE_FONT_SIZE, PowerupType } from './types';
+/* eslint-enable @typescript-eslint/no-unused-vars */
 import { PowerupSVGs } from './PowerupContainer';
 import { updateAsteroidPhysics } from './gameUtils';
 
