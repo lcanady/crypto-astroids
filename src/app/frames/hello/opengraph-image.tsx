@@ -23,6 +23,7 @@ export default async function Image() {
           justifyContent: 'center',
           backgroundColor: '#000000',
           backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #000000 100%)',
+          fontFamily: 'Arial, Helvetica, sans-serif',
         }}
       >
         <div
@@ -40,6 +41,7 @@ export default async function Image() {
               color: '#ffffff',
               textShadow: '0 0 10px rgba(255,255,255,0.5)',
               margin: 0,
+              fontFamily: 'Arial, Helvetica, sans-serif',
             }}
           >
             Astroid Blast!
@@ -50,6 +52,7 @@ export default async function Image() {
               fontWeight: 'bold',
               color: '#4f9eff',
               margin: 0,
+              fontFamily: 'Arial, Helvetica, sans-serif',
             }}
           >
             Click to Play
@@ -59,6 +62,16 @@ export default async function Image() {
     ),
     {
       ...size,
+      fonts: [
+        {
+          name: 'Arial',
+          data: await fetch(
+            new URL('https://fonts.cdnfonts.com/s/29107/ARIAL.woff')
+          ).then((res) => res.arrayBuffer()),
+          weight: 400,
+          style: 'normal',
+        },
+      ],
     }
   );
 }

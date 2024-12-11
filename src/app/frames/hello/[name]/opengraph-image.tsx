@@ -31,6 +31,7 @@ export default async function Image({ params }: Props) {
           justifyContent: 'center',
           backgroundColor: '#000000',
           backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #000000 100%)',
+          fontFamily: 'Arial, Helvetica, sans-serif',
         }}
       >
         <h1
@@ -40,6 +41,7 @@ export default async function Image({ params }: Props) {
             color: '#ffffff',
             textShadow: '0 0 10px rgba(255,255,255,0.5)',
             margin: 0,
+            fontFamily: 'Arial, Helvetica, sans-serif',
           }}
         >
           Hello, {name}
@@ -48,6 +50,16 @@ export default async function Image({ params }: Props) {
     ),
     {
       ...size,
+      fonts: [
+        {
+          name: 'Arial',
+          data: await fetch(
+            new URL('https://fonts.cdnfonts.com/s/29107/ARIAL.woff')
+          ).then((res) => res.arrayBuffer()),
+          weight: 400,
+          style: 'normal',
+        },
+      ],
     }
   );
 }
