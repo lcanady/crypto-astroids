@@ -1,38 +1,23 @@
 import { Metadata } from "next";
-import App from "./app";
+import Demo from "~/components/Demo";
 
-const appUrl = process.env.NEXT_PUBLIC_URL;
-
-const frame = {
-  version: "next",
-  imageUrl: `${appUrl}/opengraph-image`,
-  button: {
-    title: "Launch Frame",
-    action: {
-      type: "launch_frame",
-      name: "Farcaster Frames v2 Demo",
-      url: appUrl,
-      splashImageUrl: `${appUrl}/splash.png`,
-      splashBackgroundColor: "#000",
-    },
+export const metadata: Metadata = {
+  title: "Astroid Blast!",
+  description: "An astroid blaster!",
+  openGraph: {
+    title: "Astroid Blast!",
+    description: "An astroid blaster!",
+    images: [
+      {
+        url: "/api/og",
+        width: 1200,
+        height: 630,
+        alt: "Astroid Blast!",
+      },
+    ],
   },
 };
 
-export const revalidate = 300;
-
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: "Asreroid Blast!",
-    openGraph: {
-      title: "Asreroid Blast!",
-      description: "An asreroid blaster!",
-    },
-    other: {
-      "fc:frame": JSON.stringify(frame),
-    },
-  };
-}
-
-export default function Home() {
-  return (<App />);
+export default function Page() {
+  return <Demo />;
 }

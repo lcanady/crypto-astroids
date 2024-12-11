@@ -173,7 +173,7 @@ export const drawStartScreen = (
   ctx.fillStyle = '#fff';
   ctx.font = `${titleFontSize}px "Press Start 2P"`;
   ctx.textAlign = 'center';
-  ctx.fillText('ASTEROIDS', canvas.width / 2, canvas.height / 2 - titleFontSize);
+  ctx.fillText('ASTROID BLAST!', canvas.width / 2, canvas.height / 2 - titleFontSize);
   
   ctx.font = `${normalFontSize}px "Press Start 2P"`;
   const lineHeight = normalFontSize * 1.5;

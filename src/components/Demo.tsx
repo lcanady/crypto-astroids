@@ -6,7 +6,7 @@ import { AsteroidsGame } from './AsteroidsGame';
 import { GameStatus } from './game/types';
 
 export default function Demo(
-  { title }: { title?: string } = { title: "Asteroids Frame Game" }
+  { title }: { title?: string } = { title: "Astroid Blast! Frame Game" }
 ) {
   // These state variables are used indirectly through canvas data attributes
   /* eslint-disable @typescript-eslint/no-unused-vars */
